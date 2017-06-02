@@ -15,7 +15,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <math.h>
-/* ***********************************************************************************************************/	
+/***********************************************************************************************************/	
 using namespace std;
 
 class molecule
@@ -25,23 +25,25 @@ class molecule
 		int charge;
 		int *zvals;
 		double **geom;
-		double **R_bonds;
 		string point_group;
+
+
 		void print_geom();
 		void rotate(double phi);
 		void translate(double x, double y, double z);
 		double bond(int atom1, int atom2);
-		double angle(int atom1, int atom2, int atom3);
+		double angle(int i, int j, int k);
+		double compo(int int i, int j);
 		double torsion(int atom1, int atom2, int atom3, int atom4);
-	 
+		void print(double **mat, int row, int col);	 
 
-/* ************************************************************************************************************* */
+/***************************************************************************************************************/
 //default constructor
 		molecule();
 		molecule (const char *filename, int q);
 
 
-/* ***********************************************************************************************************/	
+/************************************************************************************************************/	
  //destructor
 		~molecule();
 
@@ -49,7 +51,7 @@ class molecule
 
 
 
-/* ***********************************************************************************************************/	
+/***********************************************************************************************************/	
 
 
 	private:
