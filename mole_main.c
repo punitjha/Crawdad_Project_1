@@ -62,10 +62,11 @@ int main()
 				{
 				     phi[i][j][k]=acet.angle(i,j,k);
 					cout<<i<<","<<j<<","<<k<<","<<R_bonds[i][j]<<" "<<R_bonds[j][k]<<" "<<phi[i][j][k]*(180.0/acos(-1.0))<<endl;
-											}
-										}
-									}
-								}
+				}
+			}
+		}
+	}
+		
 	
 
 

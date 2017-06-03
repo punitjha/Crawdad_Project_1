@@ -28,6 +28,7 @@ class molecule
 		string point_group;
 
 
+//the functions are defined here
 		void print_geom();
 		void rotate(double phi);
 		void translate(double x, double y, double z);
