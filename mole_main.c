@@ -1,4 +1,5 @@
 #include "molecule.h"
+#include "mass.h"
 using namespace std;
 
 /**************************************************************/	
@@ -20,7 +21,7 @@ int main()
 			//cout<<R_bonds[i][j]<<"   ";
 		}
 	}
-	cout<<endl<<"we now print all the bond angles"<<endl;
+	cout<<endl<<"Printing the bond distances"<<endl;
 	acet.print(R_bonds, acet.natom,acet.natom);
 	double **ex=new double* [acet.natom];
 	double **ey=new double* [acet.natom];
@@ -64,25 +65,26 @@ int main()
 				if (R_bonds[i][j]<4.0 && R_bonds[j][k] < 4.0)
 				{
 				     phi[i][j][k]=acet.angle(i,j,k);
-					cout<<i<<","<<j<<","<<k<<","<<R_bonds[i][j]<<" "<<R_bonds[j][k]<<" "<<phi[i][j][k]*(180.0/acos(-1.0))<<endl;
+					printf("%2d %2d %2d %10.4f\n",i,j,k,phi[i][j][k]*(180.0/acos(-1.0)));
 												}
 											}
 										}
 									}
+		
 	
 //now we calculate the out of plane angles
 	cout<<endl<<"Out of plane angles"<<endl;
 	for (int i=0; i<acet.natom; i++)
 	{
-		for (int j=0; j<acet.natom; j++)
+		for (int k=0; k<acet.natom; k++)
 		{
-			for(int k=0; k<acet.natom; k++)
+			for(int j=0; j<acet.natom; j++)
 			{
 				for(int l=0; l<j; l++)
 				{
-					if (R_bonds[i][k] < 4.0 && R_bonds[j][k]< 4.0 && R_bonds [k][l]< 4.0 && i !=j && i !=k && i != l && j!=k && j!=l && k != l ) 
+					if (R_bonds[i][k] < 4.0 && R_bonds[j][k]< 4.0 && R_bonds [k][l]< 4.0 && i!=j && i!=k && i!= l && j!=k && k!=l ) 
 					{ 
-						printf(" %2d %2d %2d %2d %10.6f\n", i,j,k,l,acet.outplane(i,j,k,l)*(180.0/acos(-1.0)));
+						printf(" %2d %2d %2d %2d %10.5f\n", i,j,k,l,acet.outplane(i,j,k,l)*(180.0/acos(-1.0)));
 					}
 				  }
 			 }
@@ -92,20 +94,51 @@ int main()
 	cout<<endl<<"The torsion angles"<<endl;
 	for (int i=0; i<acet.natom; i++)
 	{
-		for (int j=0; j<acet.natom; j++)
+		for (int j=0; j<i; j++)
 		{
-			for(int k=0; k<acet.natom; k++)
+			for(int k=0; k<j; k++)
 			{
-				for(int l=0; l<j; l++)
+				for(int l=0; l<k; l++)
 				{
-					if (R_bonds[i][k] < 4.0 && R_bonds[j][k]< 4.0 && R_bonds [k][l]< 4.0 && i !=j && i !=k && i != l && j!=k && j!=l && k != l ) 
+					if (R_bonds[i][j] < 4.0 && R_bonds[j][k]< 4.0 && R_bonds [k][l]< 4.0 ) 
 					{ 
-						printf(" %2d %2d %2d %2d %10.6f\n", i,j,k,l,acet.torsion(i,j,k,l)*(180.0/acos(-1.0)));
+						printf(" %2d %2d %2d %2d %10.5f\n", i,j,k,l,acet.torsion(i,j,k,l)*(180.0/acos(-1.0)));
 					}
 				  }
 			 }
 		}
 	}
+
+//center of mass translation
+	double x_cm=0.0;
+	double y_cm=0.0;
+	double z_cm=0.0;
+	double sum=0.0;
+	for (int i=0; i<acet.natom; i++)
+	{
+		x_cm=x_cm+masses[acet.zvals[i]]*acet.geom[i][0];
+		y_cm=y_cm+masses[acet.zvals[i]]*acet.geom[i][1];
+		z_cm=z_cm+masses[acet.zvals[i]]*acet.geom[i][2];
+		sum=sum+masses[acet.zvals[i]];
+	}
+	cout<<endl<<"X_COM"<<' '<<x_cm/sum<<endl;
+	cout<<"Y_COM"<<' '<<y_cm/sum<<endl;
+	cout<<"Z_COM"<<' '<<z_cm/sum<<endl;
+
+//translating the molecule to the centre of mass
+	acet.translate(x_cm/sum, y_cm/sum, z_cm/sum);
+	cout<<endl<<"Translating it to the centre of mass"<<endl;
+	acet.print_geom();
+	
+
+
+
+//Calculating the principle moments of inertia
+
+	double
+
+
+
 //deleting the memory allocated to the bond vector
 	for(int i=0; i < acet.natom; i++) 
 		delete[] R_bonds[i];
@@ -120,4 +153,24 @@ int main()
 	delete[] ex;
 	delete[] ey;
 	delete[] ez;
+//deleting the memory allocated to the phi vector
+	for (int i=0; i<acet.natom; i++)
+	{
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

@@ -1,5 +1,5 @@
 #include "molecule.h"
-
+#include "mass.h"
 /********************************************************/	
 //default constructor
 	molecule::molecule (const char *filename, int q)
@@ -30,7 +30,7 @@
 	void molecule::print_geom()
 	{
 	    for(int i=0; i < natom; i++)
-	    printf("%d %8.11f %8.11f %8.11f\n", zvals[i], geom[i][0], geom[i][1], geom[i][2]);
+	    printf("%d %8.5f %8.5f %8.5f\n", zvals[i], geom[i][0], geom[i][1], geom[i][2]);
 	}
 	
 /******************************************************************/
@@ -44,7 +44,7 @@
 		{
 			for(int j=0; j<col; j++)
 			{
-			printf("%8.9f "  "",mat[i][j]);
+			printf("%8.5f "  "",mat[i][j]);
 			}
 		cout<<endl;
 		}
@@ -115,13 +115,47 @@
 
 /****************************************************************/
 
-
-	double molecule::torsion(int atom1, int atom2, int atom3, int atom4)
+	double molecule::torsion(int i, int j, int k, int l)
 	{
-		return acos(cross_x(l,j,i,k)*cross()) 
+
+//the cross product components
+
+		double ijjk_x=(compo(1,i,j)*compo(2,j,k)-compo(2,i,j)*compo(1,j,k));
+		double ijjk_y=(compo(2,i,j)*compo(0,j,k)-compo(0,i,j)*compo(2,j,k));
+		double ijjk_z=(compo(0,i,j)*compo(1,j,k)-compo(1,i,j)*compo(0,j,k));
+		double jkkl_x=(compo(1,j,k)*compo(2,k,l)-compo(2,j,k)*compo(1,k,l));
+		double jkkl_y=(compo(2,j,k)*compo(0,k,l)-compo(0,j,k)*compo(2,k,l));
+		double jkkl_z=(compo(0,j,k)*compo(1,k,l)-compo(1,j,k)*compo(0,k,l));
+	
+//the dot product components
+		double dot_x=ijjk_x*jkkl_x;
+		double dot_y=ijjk_y*jkkl_y;
+		double dot_z=ijjk_z*jkkl_z;
+		double theta=(dot_x+dot_y+dot_z)/(sin(angle(i,j,k))*sin(angle(j,k,l)));
+	
+//checking the numerical precision and the sign of torsion angle
+		
+		if (theta <-1.0)
+			theta= acos(-1.0);
+	 	else if (theta > 1.0)
+			theta= acos(1.0);
+		else theta= acos(theta);
+		double cross_x=ijjk_y*jkkl_z-ijjk_z*jkkl_y;
+		double cross_y=ijjk_z*jkkl_x-ijjk_x*jkkl_z;
+		double cross_z=ijjk_x*jkkl_y-ijjk_y*jkkl_x;
+		double norm=cross_x*cross_x+cross_y*cross_y+cross_z*cross_z;
+		cross_x/=norm;
+		cross_y/=norm;
+		cross_z/=norm;
+		double sign=1.0;
+		double dot=cross_x*compo(0,j,k)+cross_y*compo(1,j,k)+cross_z*compo(2,j,k);
+		if (dot < 0.0)
+			sign=-1.0;
+		return theta*sign;
+
 	}
 
-/*******************************************************************/	
+/****************************************************************/	
 //destructor
 	molecule::~molecule()
 	{
@@ -131,7 +165,5 @@
 		delete[] geom;
 			
 	}
-
       
-/*******************************************************************************/	
-//general functions/display
+/****************************************************************/	
