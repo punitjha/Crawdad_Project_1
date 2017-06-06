@@ -33,10 +33,13 @@ class molecule
 		void translate(double x, double y, double z);
 		double bond(int atom1, int atom2);
 		double angle(int i, int j, int k);
-		double compo(int int i, int j);
+		double compo(int i, int j, int cartesian);
+		double cross_x(int i, int j, int k, int l);
+		double cross_y(int i, int j, int k, int l);
+		double cross_z(int i, int j, int k, int l);
+		double outplane( int i, int j, int k, int l);
 		double torsion(int atom1, int atom2, int atom3, int atom4);
 		void print(double **mat, int row, int col);	 
-
 /***************************************************************************************************************/
 //default constructor
 		molecule();
@@ -46,10 +49,6 @@ class molecule
 /************************************************************************************************************/	
  //destructor
 		~molecule();
-
-
-
-
 
 /***********************************************************************************************************/	
 
