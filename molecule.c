@@ -1,6 +1,7 @@
 #include "molecule.h"
-#include "mass.h"
-/********************************************************/	
+
+
+/**************************************************************************************/	
 //default constructor
 	molecule::molecule (const char *filename, int q)
 	{
@@ -17,15 +18,16 @@
 			for(int i=0; i < natom; i++)
 				geom[i] = new double[2];
 			for(unsigned int i=0; i < natom; ++i)
-				myreadfile1 >> zvals[i] >> geom[i][0] >> geom[i][1] >> geom[i][2];
+				myreadfile1 >> zvals[i] >> geom[i][0] >> geom[i][1] >> 
+					    geom[i][2];
 		}
 		else  
 			cout << "Unable to open file"<<endl;
 	}
 
-/********************************************************/	
-
+/******************************************************************************************/	
 //setter functions
+/******************************************************************************************/	
 
 	void molecule::print_geom()
 	{
@@ -34,10 +36,6 @@
 	}
 	
 /******************************************************************/
-	void molecule::rotate(double phi)
-	{
-	}
-/*****************************************************************/
 	void molecule::print(double **mat, int row, int col)
 	{
 		for(int i=0; i<row; i++)
@@ -50,10 +48,6 @@
 		}
 	}
 /*****************************************************************/
-
-	/*****************************************************************/
-
-
 	void molecule::translate(double x, double y, double z)
 	{
 		for(int i=0; i < natom; i++) 
@@ -64,17 +58,16 @@
 		}
 	}
 /******************************************************************/
-    
 	double molecule::bond(int a, int b)
 	{
-	 return sqrt( (geom[a][0]-geom[b][0])*(geom[a][0]-geom[b][0])+(geom[a][1]-geom[b][1])*(geom[a][1]-geom[b][1])+(geom[a][2]-geom[b][2])*(geom[a][2]-geom[b][2]) );
+	 return sqrt( (geom[a][0]-geom[b][0])*(geom[a][0]-geom[b][0])+(geom[a][1]-geom[b][1])*
+			 (geom[a][1]-geom[b][1])+(geom[a][2]-geom[b][2])*(geom[a][2]-geom[b][2]) );
 	}
 /******************************************************************/
 	double molecule::compo( int cartesian,int i, int j)
 	{
 	return -(geom[i][cartesian]-geom[j][cartesian])/bond(i,j);
 	}	
-	
 /******************************************************************/
 	double molecule::angle(int i, int j, int k)
 	{
@@ -97,24 +90,18 @@
 		return ( (compo(0,k,j)*compo(1,k,l)-compo(1,k,j)*compo(0,k,l)));
 	}
 
-
-
 /****************************************************************/
-
 	double molecule::outplane(int i, int j, int k, int l)
 	{
-		double theta= (((cross_x(i,j,k,l))*compo(0,k,i)+ cross_y(i,j,k,l)*compo(1,k,i)+cross_z(i,j,k,l)*compo(2,k,i))/sin(angle(j,k,l)));
+		double theta= (((cross_x(i,j,k,l))*compo(0,k,i)+ cross_y(i,j,k,l)*compo(1,k,i)+
+					cross_z(i,j,k,l)*compo(2,k,i))/sin(angle(j,k,l)));
 		if (theta <-1.0)
 			return asin(-1.0);
 	 	else if (theta > 1.0)
 			return asin(1.0);
 		else return asin(theta);
 	}
-
-
-
 /****************************************************************/
-
 	double molecule::torsion(int i, int j, int k, int l)
 	{
 
@@ -154,9 +141,9 @@
 		return theta*sign;
 
 	}
-
 /****************************************************************/	
 //destructor
+/****************************************************************/	
 	molecule::~molecule()
 	{
 		delete[] zvals;
@@ -165,5 +152,4 @@
 		delete[] geom;
 			
 	}
-      
 /****************************************************************/	

@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <math.h>
+#include <armadillo>
 /***********************************************************************************************************/	
 using namespace std;
 
@@ -19,7 +20,7 @@ using namespace std;
 //0
 //hydrogen
 //lithium
-double masses[]= {
+double mass[]= {
 			0.00000,
 			1.007825,
 			4.002603,

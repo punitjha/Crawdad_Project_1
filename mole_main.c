@@ -1,7 +1,6 @@
 #include "molecule.h"
 #include "mass.h"
 using namespace std;
-
 /**************************************************************/	
 int main()
 {
@@ -66,12 +65,10 @@ int main()
 				{
 				     phi[i][j][k]=acet.angle(i,j,k);
 					printf("%2d %2d %2d %10.4f\n",i,j,k,phi[i][j][k]*(180.0/acos(-1.0)));
-												}
-											}
-										}
-									}
-		
-	
+				}
+			}
+		}
+}
 //now we calculate the out of plane angles
 	cout<<endl<<"Out of plane angles"<<endl;
 	for (int i=0; i<acet.natom; i++)
@@ -82,7 +79,8 @@ int main()
 			{
 				for(int l=0; l<j; l++)
 				{
-					if (R_bonds[i][k] < 4.0 && R_bonds[j][k]< 4.0 && R_bonds [k][l]< 4.0 && i!=j && i!=k && i!= l && j!=k && k!=l ) 
+					if (R_bonds[i][k] < 4.0 && R_bonds[j][k]< 4.0 && R_bonds [k][l]< 4.0 
+							&& i!=j && i!=k && i!= l && j!=k && k!=l ) 
 					{ 
 						printf(" %2d %2d %2d %2d %10.5f\n", i,j,k,l,acet.outplane(i,j,k,l)*(180.0/acos(-1.0)));
 					}
@@ -116,29 +114,70 @@ int main()
 	double sum=0.0;
 	for (int i=0; i<acet.natom; i++)
 	{
-		x_cm=x_cm+masses[acet.zvals[i]]*acet.geom[i][0];
-		y_cm=y_cm+masses[acet.zvals[i]]*acet.geom[i][1];
-		z_cm=z_cm+masses[acet.zvals[i]]*acet.geom[i][2];
-		sum=sum+masses[acet.zvals[i]];
+		x_cm=x_cm+mass[acet.zvals[i]]*acet.geom[i][0];
+		y_cm=y_cm+mass[acet.zvals[i]]*acet.geom[i][1];
+		z_cm=z_cm+mass[acet.zvals[i]]*acet.geom[i][2];
+		sum=sum+mass[acet.zvals[i]];
 	}
 	cout<<endl<<"X_COM"<<' '<<x_cm/sum<<endl;
 	cout<<"Y_COM"<<' '<<y_cm/sum<<endl;
 	cout<<"Z_COM"<<' '<<z_cm/sum<<endl;
 
 //translating the molecule to the centre of mass
-	acet.translate(x_cm/sum, y_cm/sum, z_cm/sum);
+	acet.translate(-x_cm/sum, -y_cm/sum, -z_cm/sum);
 	cout<<endl<<"Translating it to the centre of mass"<<endl;
 	acet.print_geom();
-	
-
-
-
 //Calculating the principle moments of inertia
+	arma::mat Inrt= arma::zeros(3,3);
+	for (int i=0; i<acet.natom; i++)
+	{
+		Inrt(0,0)+= mass[acet.zvals[i]]*(acet.geom[i][1]*acet.geom[i][1]+acet.geom[i][2]*acet.geom[i][2]);
+		Inrt(1,1)+= mass[acet.zvals[i]]*(acet.geom[i][0]*acet.geom[i][0]+acet.geom[i][2]*acet.geom[i][2]);
+		Inrt(2,2)+= mass[acet.zvals[i]]*(acet.geom[i][0]*acet.geom[i][0]+acet.geom[i][1]*acet.geom[i][1]);
+		Inrt(0,1)+= mass[acet.zvals[i]]*acet.geom[i][0]*acet.geom[i][1];
+		Inrt(0,2)+= mass[acet.zvals[i]]*acet.geom[i][0]*acet.geom[i][2];
+		Inrt(1,2)+= mass[acet.zvals[i]]*acet.geom[i][1]*acet.geom[i][2];
 
-	double
-
-
-
+	}
+	Inrt(1,0)=Inrt(0,1);
+	Inrt(2,0)=Inrt(0,2);
+	Inrt(2,1)=Inrt(1,2);
+	cout<<endl;
+	Inrt.print("The moment of inertia matrix/tensors");
+	cout<<endl;
+	arma::vec eg;
+	arma::mat ev;
+	arma::eig_sym(eg,ev,Inrt);
+	cout<<endl;
+	eg.print("These are the eigenvalues in amu bohr^2");
+	double conversion=0.529177*0.529177;
+	cout<<endl<<"These are the eigenvalues in amu AA"<<endl<<eg*conversion<<endl;
+	conversion=1.6605402E-24*0.529177249E-8*0.529177249E-8;
+	cout<<endl<<"These are the eigenvalues in gg  cm^2"<<endl<<eg*conversion<<endl;
+//classifying the rotor
+	if (acet.natom == 2)
+		cout<<"The molecule is diatomic"<<endl;
+	else if (eg(0)<1e-4)
+		cout<<"The molecule is linear"<<endl;
+	else if ((fabs(eg(0)-eg(1))< 1e-4) && (fabs(eg(1)-eg(2))< 1e-4))
+		cout<<"The molecule is a spherical top"<<endl;
+	else if ((fabs(eg(0)-eg(1)) < 1e-4) && (fabs(eg(1)-eg(2))> 1e-4))
+		cout<<"The molecule is a oblate symmetric top"<<endl;
+	else if ((fabs(eg(0)-eg(1))> 1e-4 )&& (fabs(eg(1)-eg(2))< 1e-4))
+		cout<<"The molecule is a prolate symmetric top"<<endl;
+	else cout<<"The molecule is a asymmetric top"<<endl;	
+//calculating the rotational constants of the molecules
+	double plank=6.6260755e-27;
+	double pi=acos(-1.0);
+	double sp=3.0e10;
+	double A=plank/(8.0*pi*pi*sp*eg(0)*1.6605402E-24*0.529177249E-8*0.529177249E-8);
+	double B=plank/(8.0*pi*pi*sp*eg(1)*1.6605402E-24*0.529177249E-8*0.529177249E-8);
+	double C=plank/(8.0*pi*pi*sp*eg(2)*1.6605402E-24*0.529177249E-8*0.529177249E-8);
+	cout<<"\nRotational Constants in cm -1:\n" <<"A="<<A<<"\tB="<<B<<"\tC="<<C<<endl;
+	double A_1=1.0e-6*plank/(8.0*pi*pi*eg(0)*1.6605402E-24*0.529177249E-8*0.529177249E-8);
+	double B_1=1e-6*plank/(8.0*pi*pi*eg(1)*1.6605402E-24*0.529177249E-8*0.529177249E-8);
+	double C_1=1e-6*plank/(8.0*pi*pi*eg(2)*1.6605402E-24*0.529177249E-8*0.529177249E-8);
+	cout<<"\nRotational Constants in MHz is:\n" <<"A="<<A_1<<"\tB="<<B_1<<"\tC="<<C_1<<endl;
 //deleting the memory allocated to the bond vector
 	for(int i=0; i < acet.natom; i++) 
 		delete[] R_bonds[i];
@@ -156,21 +195,11 @@ int main()
 //deleting the memory allocated to the phi vector
 	for (int i=0; i<acet.natom; i++)
 	{
+		for(int j=0; j<acet.natom;j++)
+		{
+			delete[] phi[i][j];	
+		}
+	delete[] phi[i];
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	delete[] phi;
 }
